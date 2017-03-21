@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ft_tolower.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nboste <nboste@student.42.fr>              +#+  +:+       +#+        */
+/*   By: pdelobbe <pdelobbe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2016/10/07 19:10:26 by nboste            #+#    #+#             */
-/*   Updated: 2016/10/08 11:28:48 by nboste           ###   ########.fr       */
+/*   Created: 2015/11/02 15:45:27 by pdelobbe          #+#    #+#             */
+/*   Updated: 2015/11/09 16:29:46 by pdelobbe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,8 +14,7 @@
 
 int		ft_tolower(int c)
 {
-	if (ft_isalpha(c))
-		if (c < 91)
-			return (c + 32);
+	if (c >= 65 && c <= 90)
+		c += 32;
 	return (c);
 }

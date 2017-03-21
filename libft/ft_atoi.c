@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ft_atoi.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nboste <nboste@student.42.fr>              +#+  +:+       +#+        */
+/*   By: pdelobbe <pdelobbe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2016/10/07 18:49:23 by nboste            #+#    #+#             */
-/*   Updated: 2016/10/08 11:01:01 by nboste           ###   ########.fr       */
+/*   Created: 2015/11/02 15:32:58 by pdelobbe          #+#    #+#             */
+/*   Updated: 2015/11/09 16:07:44 by pdelobbe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,25 +14,24 @@
 
 int		ft_atoi(const char *str)
 {
-	unsigned int	tmp;
-	int				neg;
+	int		i;
+	int		nbr;
+	int		sign;
 
-	neg = 1;
-	tmp = 0;
-	while ((*str == ' ' || *str == '\t' || *str == '\n' || *str == '\v'
-				|| *str == '\f' || *str == '\r'))
-		str++;
-	if (*str == '-')
+	i = 0;
+	nbr = 0;
+	sign = 1;
+	while (str[i] == ' ' || str[i] == '\f' || str[i] == '\n' || str[i] == '\r'
+			|| str[i] == '\t' || str[i] == '\v')
+		++i;
+	if (str[i] == '-')
+		sign = -1;
+	if (str[i] == '-' || str[i] == '+')
+		++i;
+	while (ft_isdigit(str[i]))
 	{
-		neg = -1;
-		str++;
+		nbr = (nbr * 10) + (str[i] - '0');
+		++i;
 	}
-	else if (*str == '+')
-		str++;
-	while (*str >= '0' && *str <= '9')
-	{
-		tmp = tmp * 10 + *str - '0';
-		str++;
-	}
-	return ((int)(tmp * neg));
+	return (nbr * sign);
 }

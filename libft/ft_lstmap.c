@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ft_lstmap.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nboste <nboste@student.42.fr>              +#+  +:+       +#+        */
+/*   By: pdelobbe <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2016/10/09 14:18:21 by nboste            #+#    #+#             */
-/*   Updated: 2016/10/09 14:41:44 by nboste           ###   ########.fr       */
+/*   Created: 2015/11/09 15:36:13 by pdelobbe          #+#    #+#             */
+/*   Updated: 2015/11/09 15:40:02 by pdelobbe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,29 +14,24 @@
 
 t_list	*ft_lstmap(t_list *lst, t_list *(*f)(t_list *elem))
 {
-	t_list	*curr;
+	t_list	*ret;
+	t_list	*telem;
 	t_list	*prev;
-	t_list	*new;
 
-	new = NULL;
+	ret = NULL;
 	if (lst && f)
 	{
-		curr = f(lst);
+		ret = (*f)(lst);
+		prev = ret;
 		lst = lst->next;
-		new = curr;
-		if (new)
+		while (lst)
 		{
-			while (lst)
-			{
-				prev = curr;
-				curr = f(lst);
-				if (!curr)
-					return (NULL);
-				prev->next = curr;
-				lst = lst->next;
-			}
-			curr->next = 0;
+			telem = (*f)(lst);
+			prev->next = telem;
+			prev = telem;
+			lst = lst->next;
 		}
+		prev->next = NULL;
 	}
-	return (new);
+	return (ret);
 }

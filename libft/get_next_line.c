@@ -3,128 +3,84 @@
 /*                                                        :::      ::::::::   */
 /*   get_next_line.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nboste <nboste@student.42.fr>              +#+  +:+       +#+        */
+/*   By: pdelobbe <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2016/12/01 22:03:40 by nboste            #+#    #+#             */
-/*   Updated: 2016/12/08 01:08:18 by nboste           ###   ########.fr       */
+/*   Created: 2016/04/17 17:01:40 by pdelobbe          #+#    #+#             */
+/*   Updated: 2016/08/16 01:40:41 by pdelobbe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "get_next_line.h"
+#include "libft.h"
 
-static void		del_buffer(void *content, size_t content_size)
+static char	*join_str(char *s1, char *s2)
 {
-	free(((t_buffer *)content)->data);
-	free(((t_buffer *)content));
-	content_size = content_size + 1;
-}
+	char	*ret;
 
-static int		destroy_return(t_list **buffers, t_buffer **buffer,
-				char **line, int ret)
-{
-	t_list	*tmp;
-	t_list	*prev;
-
-	tmp = *buffers;
-	prev = NULL;
-	ft_strdel(line);
-	while (tmp)
+	ret = NULL;
+	if (s1 && s2)
 	{
-		if ((t_buffer *)tmp->content == *buffer)
-		{
-			if (prev != NULL)
-				prev->next = tmp->next;
-			ft_lstdelone(&tmp, del_buffer);
-			if (prev == NULL)
-				*buffers = NULL;
-			return (ret);
-		}
-		prev = tmp;
-		tmp = tmp->next;
+		if ((ret = (char*)malloc(ft_strlen(s1) + ft_strlen(s2) + 1)) == NULL)
+			return (NULL);
+		ft_strcpy(ret, s1);
+		ft_strcat(ret, s2);
+		free((char*)s1);
 	}
 	return (ret);
 }
 
-static t_buffer	*get_buffer(t_list **buffers, int fd)
+static int	cut_next_line(int fd, char **line, char **str, char *pos)
 {
-	t_list		*tmp;
-	t_buffer	*buffer;
+	int		ret;
 
-	tmp = *buffers;
-	while (tmp)
+	*line = ft_strdup(*str);
+	while (!pos)
 	{
-		if (((t_buffer *)(tmp->content))->fd == fd)
-			return ((t_buffer *)(tmp->content));
-		tmp = tmp->next;
-	}
-	if (!(buffer = (t_buffer *)malloc(sizeof(t_buffer))))
-		return (NULL);
-	if (!(buffer->data = ft_strnew(BUFF_SIZE)))
-	{
-		free(buffer);
-		return (NULL);
-	}
-	buffer->remaining_data = NULL;
-	buffer->fd = fd;
-	buffer->last = NULL;
-	buffer->eof = 0;
-	ft_lstadd(buffers, ft_lstnew((void *)buffer, sizeof(t_buffer)));
-	free(buffer);
-	return ((t_buffer *)(*buffers)->content);
-}
-
-static int		process_buffer(t_buffer *buffer, char **ret)
-{
-	char	*tmp;
-	char	*rem;
-	int		flag;
-
-	flag = 1;
-	if (buffer->remaining_data != NULL)
-	{
-		rem = buffer->remaining_data;
-		if ((tmp = ft_strchr(buffer->remaining_data, (int)'\n')))
+		if ((ret = read(fd, *str, BUFF_SIZE)) < 0)
+			return (-1);
+		if ((pos = ft_strchr(*str, '\n')) == NULL && !ret)
+			return ((*str)[0] = 0);
+		else if (pos)
 		{
-			*tmp = '\0';
-			buffer->remaining_data = tmp + 1 >= buffer->last ? NULL : tmp + 1;
+			(*str)[ret] = ret ? 0 : (*str)[ret];
+			pos[0] = 0;
+			*line = join_str(*line, *str);
+			ft_strcpy(*str, pos + 1);
 		}
-		else if (buffer->eof)
-			buffer->remaining_data = NULL;
 		else
-			flag = 0;
-		tmp = *ret;
-		if (!(*ret = ft_strjoin(*ret, rem)))
-			return (0);
-		free(tmp);
-		return (flag);
+		{
+			(*str)[ret] = ret ? 0 : (*str)[ret];
+			*line = join_str(*line, *str);
+			(*str)[0] = 0;
+		}
 	}
-	return (0);
+	return (*line ? 1 : -1);
 }
 
-int				get_next_line(const int fd, char **line)
+int			get_next_line(int const fd, char **line)
 {
-	static t_list	*l_buffers;
-	t_buffer		*buffer;
-	int				nb_read;
+	static char	*str;
+	int			ret;
+	char		*pos;
 
-	if (!line || !(*line = ft_strnew(0)) || fd < 0)
+	if (BUFF_SIZE < 1 || !line)
 		return (-1);
-	buffer = get_buffer(&l_buffers, fd);
-	if (buffer->eof && buffer->remaining_data == NULL)
-		return (destroy_return(&l_buffers, &buffer, line, 0));
-	if (process_buffer(buffer, line))
-		return (1);
-	while ((nb_read = read(fd, buffer->data, BUFF_SIZE)) >= 0)
+	if (!str)
+		if ((str = (char*)malloc(BUFF_SIZE + 1)) == NULL
+				&& !(*str = 0))
+			return (-1);
+	pos = ft_strchr(str, '\n');
+	if (pos)
 	{
-		if (nb_read == 0 && **line == '\0')
-			return (destroy_return(&l_buffers, &buffer, line, 0));
-		buffer->last = buffer->data + nb_read;
-		*buffer->last = '\0';
-		buffer->remaining_data = buffer->data;
-		if (nb_read < BUFF_SIZE)
-			buffer->eof = 1;
-		if (process_buffer(buffer, line))
-			return (1);
+		pos[0] = 0;
+		*line = ft_strdup(str);
+		ft_strcpy(str, pos + 1);
+		return (*line ? 1 : -1);
 	}
-	return (destroy_return(&l_buffers, &buffer, line, -1));
+	else
+		ret = cut_next_line(fd, line, &str, NULL);
+	if (ret == 0 && ft_strlen(*line) == 0)
+		free(str);
+	if (ret == -1)
+		return (-1);
+	return (ret ? 1 : ft_strlen(*line) != 0);
 }

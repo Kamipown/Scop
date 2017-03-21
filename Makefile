@@ -1,7 +1,36 @@
-all:
-	gcc -Wall -Wextra -Werror main.c obj_parser.c array_3dv.c array_2dp.c ft_atod.c libft/libft.a -I./libft/includes -o obj_parser
+NAME =		scop
+
+CC =		gcc
+
+FLG =		-Wall -Wextra -Werror
+
+LIB =		-L./libft -lft
+
+INC =		-I./inc -I./libft/includes
+
+SRC_DIR =	src/
+
+SRC_FILES =	main.c			\
+			obj_parser.c	\
+			array_3dv.c		\
+			array_2dp.c		\
+
+OBJ =		$(SRC_FILES:.c=.o)
+
+SRC =		$(addprefix $(SRC_DIR), $(SRC_FILES))
+
+all: $(NAME)
+
+$(NAME):
+	make -C ./libft
+	$(CC) -c $(FLG) $(INC) $(SRC)
+	$(CC) -o $(NAME) $(OBJ) $(LIB)
 
 clean:
-	rm -f obj_parser
+	rm -f $(OBJ)
 
-re: clean all
+fclean: clean
+	make -C ./libft fclean
+	rm -f $(NAME)
+
+re: fclean all

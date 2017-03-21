@@ -3,68 +3,57 @@
 /*                                                        :::      ::::::::   */
 /*   ft_itoa.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nboste <nboste@student.42.fr>              +#+  +:+       +#+        */
+/*   By: pdelobbe <pdelobbe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2016/10/07 21:49:01 by nboste            #+#    #+#             */
-/*   Updated: 2016/10/12 21:23:40 by nboste           ###   ########.fr       */
+/*   Created: 2015/11/02 15:34:50 by pdelobbe          #+#    #+#             */
+/*   Updated: 2015/11/09 14:38:55 by pdelobbe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft.h"
 
-static size_t	ft_get_str_size(int n)
+static void	ft_itoa_putnbr(char *str, size_t i, int n)
 {
-	size_t			i;
-	size_t			neg;
-	unsigned int	nb;
-
-	i = 0;
-	neg = n < 0 ? 1 : 0;
-	nb = n < 0 ? n * -1 : n;
-	while (nb)
+	if (n >= 10 || n <= -10)
 	{
-		i++;
-		nb = nb / 10;
+		if (n > 0)
+			str[i] = (n % 10) + '0';
+		else
+			str[i] = -(n % 10) + '0';
+		ft_itoa_putnbr(str, i - 1, n / 10);
 	}
-	return (i + neg);
-}
-
-static char		*ft_zero_str(void)
-{
-	char	*s;
-
-	if (!(s = (char *)malloc(2)))
-		return (NULL);
-	s[0] = '0';
-	s[1] = '\0';
-	return (s);
-}
-
-char			*ft_itoa(int n)
-{
-	char			*str;
-	int				i;
-	int				neg;
-	unsigned int	nb;
-
-	if (n == 0)
-		return (ft_zero_str());
-	i = ft_get_str_size(n);
-	if (!(str = (char *)ft_strnew(sizeof(char) * (i))))
-		return (NULL);
-	i = 0;
-	neg = n < 0 ? 1 : 0;
-	nb = n < 0 ? n * -1 : n;
-	if (neg)
-		str[i++] = '-';
-	while (nb)
-	{
-		str[i++] = nb % 10 + '0';
-		nb = nb / 10;
-	}
-	if (neg)
-		ft_strrev(str + 1, 0);
 	else
-		ft_strrev(str, 0);
+	{
+		if (n > 0)
+			str[i] = n + '0';
+		else
+			str[i] = -n + '0';
+	}
+}
+
+char		*ft_itoa(int n)
+{
+	char	*str;
+	size_t	len;
+	int		tempn;
+
+	tempn = n;
+	str = NULL;
+	len = 1;
+	while (tempn /= 10)
+		++len;
+	if ((str = (char*)malloc(len + (n < 0 ? 2 : 1))) == NULL)
+		return (NULL);
+	if (n < 0)
+	{
+		str[0] = '-';
+		ft_itoa_putnbr(&str[1], len - 1, n);
+	}
+	else
+		ft_itoa_putnbr(str, len - 1, n);
+	if (n < 0)
+		str[len + 1] = 0;
+	else
+		str[len] = 0;
 	return (str);
 }
